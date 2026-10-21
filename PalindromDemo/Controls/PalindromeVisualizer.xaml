@@ -1,0 +1,107 @@
+﻿<UserControl x:Class="PalindromDemo.Controls.PalindromeVisualizer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:PalindromDemo.ViewModels">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </UserControl.Resources>
+    <Border BorderBrush="#BBB" BorderThickness="1" Background="#FAFAFA" Padding="10" MinHeight="100">
+        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
+                      CanContentScroll="True">
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Left">
+                <Canvas x:Name="ArrowCanvas" Height="24" Width="{Binding TotalWidth, FallbackValue=0}">
+                    <Path x:Name="LeftArrow"
+                          Data="M 2,8 L 10,8 L 10,4 L 18,12 L 10,20 L 10,16 L 2,16 Z"
+                          Stretch="None" Fill="SteelBlue"
+                          Visibility="{Binding ArrowsVisible, Converter={StaticResource BoolToVis}}">
+                        <Path.Style>
+                            <Style TargetType="Path">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ArrowsFinished}" Value="True">
+                                        <Setter Property="Fill" Value="Green"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ArrowsMismatch}" Value="True">
+                                        <Setter Property="Fill" Value="Red"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Path.Style>
+                    </Path>
+                    <Path x:Name="RightArrow"
+                          Data="M 30,8 L 22,8 L 22,4 L 14,12 L 22,20 L 22,16 L 30,16 Z"
+                          Stretch="None" Fill="SteelBlue"
+                          Visibility="{Binding ArrowsVisible, Converter={StaticResource BoolToVis}}">
+                        <Path.Style>
+                            <Style TargetType="Path">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ArrowsFinished}" Value="True">
+                                        <Setter Property="Fill" Value="Green"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ArrowsMismatch}" Value="True">
+                                        <Setter Property="Fill" Value="Red"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Path.Style>
+                    </Path>
+                </Canvas>
+
+                <ItemsControl ItemsSource="{Binding Characters}" HorizontalAlignment="Left">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="{x:Type vm:CharViewModel}">
+                            <Grid Width="32" Height="40">
+                                <Border x:Name="Bg" CornerRadius="4">
+                                    <Border.Background>
+                                        <SolidColorBrush Color="Transparent"/>
+                                    </Border.Background>
+                                </Border>
+                                <TextBlock Text="{Binding Char}" FontFamily="Consolas" FontSize="20"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Grid>
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding State}" Value="Comparing">
+                                    <DataTrigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetName="Bg"
+                                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                    To="#FFD700" Duration="0:0:0.15"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </DataTrigger.EnterActions>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding State}" Value="Matched">
+                                    <DataTrigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetName="Bg"
+                                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                    To="#C8E6C9" Duration="0:0:0.15"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </DataTrigger.EnterActions>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding State}" Value="Mismatched">
+                                    <DataTrigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <ColorAnimation Storyboard.TargetName="Bg"
+                                                    Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                    To="#FFCDD2" Duration="0:0:0.15"/>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </DataTrigger.EnterActions>
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

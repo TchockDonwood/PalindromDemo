@@ -1,0 +1,113 @@
+﻿<Window x:Class="PalindromDemo.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:PalindromDemo.ViewModels"
+        xmlns:controls="clr-namespace:PalindromDemo.Controls"
+        Title="Проверка строки на палиндром (рекурсивный алгоритм)"
+        Height="720" Width="960" MinHeight="650" MinWidth="800"
+        WindowStartupLocation="CenterScreen">
+    <Window.InputBindings>
+        <KeyBinding Key="Escape" Command="{Binding ClearCommand}"/>
+    </Window.InputBindings>
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Ввод -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="Введите строку для проверки" Style="{StaticResource LabelStyle}"/>
+                <TextBox Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
+                         FontSize="14" Padding="4">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Enter" Command="{Binding CheckCommand}"/>
+                    </TextBox.InputBindings>
+                </TextBox>
+            </StackPanel>
+            <Button Grid.Column="1" Content="Проверить" Command="{Binding CheckCommand}"
+                    VerticalAlignment="Bottom" Margin="8,0,4,0"/>
+            <Button Grid.Column="2" Content="Очистить" Command="{Binding ClearCommand}"
+                    VerticalAlignment="Bottom" Margin="0,0,0,0"/>
+        </Grid>
+
+        <!-- Настройки -->
+        <WrapPanel Grid.Row="1" Margin="0,10,0,0">
+            <CheckBox Content="Игнорировать регистр" IsChecked="{Binding IgnoreCase}"/>
+            <CheckBox Content="Игнорировать пробелы и знаки препинания" IsChecked="{Binding IgnorePunctuation}"/>
+            <CheckBox Content="Показывать пошаговую трассировку" IsChecked="{Binding ShowTrace}"/>
+            <CheckBox Content="Включить анимацию проверки" IsChecked="{Binding AnimateCheck}"/>
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,4,0,4">
+                <TextBlock Text="Скорость анимации:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <ComboBox SelectedValue="{Binding AnimationSpeed}" SelectedValuePath="Tag" Width="120">
+                    <ComboBoxItem Content="Медленно" Tag="{x:Static vm:AnimationSpeed.Slow}"/>
+                    <ComboBoxItem Content="Нормально" Tag="{x:Static vm:AnimationSpeed.Normal}"/>
+                    <ComboBoxItem Content="Быстро" Tag="{x:Static vm:AnimationSpeed.Fast}"/>
+                </ComboBox>
+            </StackPanel>
+        </WrapPanel>
+
+        <!-- Визуализация -->
+        <controls:PalindromeVisualizer Grid.Row="2" Margin="0,10,0,0" DataContext="{Binding}"/>
+
+        <!-- Результат -->
+        <StackPanel Grid.Row="3" Margin="0,10,0,0">
+            <TextBlock Text="{Binding ResultText}" FontSize="22" FontWeight="Bold">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Result}" Value="IsPalindrome">
+                                <Setter Property="Foreground" Value="#2E7D32"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Result}" Value="NotPalindrome">
+                                <Setter Property="Foreground" Value="#C62828"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+            <TextBlock Text="{Binding NormalizedText, StringFormat='Нормализованная строка: {0}'}"
+                       Foreground="#555" Margin="0,4,0,0"/>
+            <TextBlock Text="{Binding CallCount, StringFormat='Рекурсивных вызовов: {0}'}"
+                       Foreground="#555" Margin="0,2,0,0"/>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="#C62828" FontWeight="SemiBold"
+                       Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <!-- Трассировка и история -->
+        <Grid Grid.Row="4" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <GroupBox Header="Трассировка рекурсии" Grid.Column="0" Margin="0,0,6,0">
+                <ListBox ItemsSource="{Binding Trace}" DisplayMemberPath="Text" FontFamily="Consolas"/>
+            </GroupBox>
+            <GroupBox Header="История проверок" Grid.Column="1" Margin="6,0,0,0">
+                <DockPanel>
+                    <Button DockPanel.Dock="Bottom" Content="Очистить историю"
+                            Command="{Binding ClearHistoryCommand}"
+                            HorizontalAlignment="Right" Margin="0,6,0,0"/>
+                    <DataGrid ItemsSource="{Binding History}" AutoGenerateColumns="False"
+                              IsReadOnly="True" HeadersVisibility="Column">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Исходная" Binding="{Binding Original}" Width="*"/>
+                            <DataGridTextColumn Header="Нормализованная" Binding="{Binding Normalized}" Width="*"/>
+                            <DataGridTextColumn Header="Результат" Binding="{Binding ResultText}" Width="Auto"/>
+                            <DataGridTextColumn Header="Время" Binding="{Binding Timestamp, StringFormat='HH:mm:ss'}" Width="Auto"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </GroupBox>
+        </Grid>
+    </Grid>
+</Window>

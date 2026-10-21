@@ -60,3 +60,11 @@ src/PalindromDemo/
 ```
 
 ---
+
+## 📸 Скриншоты
+
+| Главное окно | Анимация шага | Результат |
+|:---:|:---:|:---:|
+| ![main](screenshots/main-window.png) | ![step](screenshots/animation-step.png) | ![result](screenshots/result.png) |
+
+---

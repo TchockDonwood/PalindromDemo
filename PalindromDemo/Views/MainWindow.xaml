@@ -4,7 +4,7 @@
         xmlns:vm="clr-namespace:PalindromDemo.ViewModels"
         xmlns:controls="clr-namespace:PalindromDemo.Controls"
         Title="Проверка строки на палиндром (рекурсивный алгоритм)"
-        Height="720" Width="960" MinHeight="650" MinWidth="800"
+        Height="820" Width="1100" MinHeight="700" MinWidth="900"
         WindowStartupLocation="CenterScreen">
     <Window.InputBindings>
         <KeyBinding Key="Escape" Command="{Binding ClearCommand}"/>
@@ -24,9 +24,11 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <StackPanel Grid.Column="0">
-                <TextBlock Text="Введите строку для проверки" Style="{StaticResource LabelStyle}"/>
+                <TextBlock Text="Введите строку для проверки"
+                           Style="{StaticResource LabelStyle}"/>
                 <TextBox Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
                          FontSize="14" Padding="4">
                     <TextBox.InputBindings>
@@ -36,30 +38,38 @@
             </StackPanel>
             <Button Grid.Column="1" Content="Проверить" Command="{Binding CheckCommand}"
                     VerticalAlignment="Bottom" Margin="8,0,4,0"/>
-            <Button Grid.Column="2" Content="Очистить" Command="{Binding ClearCommand}"
-                    VerticalAlignment="Bottom" Margin="0,0,0,0"/>
+            <Button Grid.Column="2" Content="Замерить чистое время"
+                    Command="{Binding MeasureCommand}"
+                    VerticalAlignment="Bottom" Margin="0,0,4,0"/>
+            <Button Grid.Column="3" Content="Очистить"
+                    Command="{Binding ClearCommand}"
+                    VerticalAlignment="Bottom"/>
         </Grid>
 
         <!-- Настройки -->
         <WrapPanel Grid.Row="1" Margin="0,10,0,0">
             <CheckBox Content="Игнорировать регистр" IsChecked="{Binding IgnoreCase}"/>
-            <CheckBox Content="Игнорировать пробелы и знаки препинания" IsChecked="{Binding IgnorePunctuation}"/>
-            <CheckBox Content="Показывать пошаговую трассировку" IsChecked="{Binding ShowTrace}"/>
-            <CheckBox Content="Включить анимацию проверки" IsChecked="{Binding AnimateCheck}"/>
+            <CheckBox Content="Игнорировать пробелы и знаки препинания"
+                      IsChecked="{Binding IgnorePunctuation}"/>
+            <CheckBox Content="Трассировка" IsChecked="{Binding ShowTrace}"/>
+            <CheckBox Content="Дерево рекурсии" IsChecked="{Binding ShowRecursionTree}"/>
+            <CheckBox Content="Время шагов в трассировке" IsChecked="{Binding ShowStepTiming}"/>
+            <CheckBox Content="Анимация" IsChecked="{Binding AnimateCheck}"/>
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,4,0,4">
-                <TextBlock Text="Скорость анимации:" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                <ComboBox SelectedValue="{Binding AnimationSpeed}" SelectedValuePath="Tag" Width="120">
-                    <ComboBoxItem Content="Медленно" Tag="{x:Static vm:AnimationSpeed.Slow}"/>
-                    <ComboBoxItem Content="Нормально" Tag="{x:Static vm:AnimationSpeed.Normal}"/>
-                    <ComboBoxItem Content="Быстро" Tag="{x:Static vm:AnimationSpeed.Fast}"/>
+                <TextBlock Text="Скорость:" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <ComboBox SelectedValue="{Binding AnimationSpeed}"
+                          SelectedValuePath="Tag" Width="120">
+                    <ComboBoxItem Content="Медленно"   Tag="{x:Static vm:AnimationSpeed.Slow}"/>
+                    <ComboBoxItem Content="Нормально"  Tag="{x:Static vm:AnimationSpeed.Normal}"/>
+                    <ComboBoxItem Content="Быстро"     Tag="{x:Static vm:AnimationSpeed.Fast}"/>
                 </ComboBox>
             </StackPanel>
         </WrapPanel>
 
-        <!-- Визуализация -->
+        <!-- Визуализация строки -->
         <controls:PalindromeVisualizer Grid.Row="2" Margin="0,10,0,0" DataContext="{Binding}"/>
 
-        <!-- Результат -->
+        <!-- Результат и время -->
         <StackPanel Grid.Row="3" Margin="0,10,0,0">
             <TextBlock Text="{Binding ResultText}" FontSize="22" FontWeight="Bold">
                 <TextBlock.Style>
@@ -75,24 +85,32 @@
                     </Style>
                 </TextBlock.Style>
             </TextBlock>
-            <TextBlock Text="{Binding NormalizedText, StringFormat='Нормализованная строка: {0}'}"
-                       Foreground="#555" Margin="0,4,0,0"/>
-            <TextBlock Text="{Binding CallCount, StringFormat='Рекурсивных вызовов: {0}'}"
-                       Foreground="#555" Margin="0,2,0,0"/>
-            <TextBlock Text="{Binding ErrorMessage}" Foreground="#C62828" FontWeight="SemiBold"
-                       Margin="0,4,0,0"/>
+            <WrapPanel Margin="0,4,0,0">
+                <TextBlock Text="{Binding NormalizedText, StringFormat='Нормализованная строка: {0}'}"
+                           Foreground="#555" Margin="0,0,20,0"/>
+                <TextBlock Text="{Binding CallCount, StringFormat='Рекурсивных вызовов: {0}'}"
+                           Foreground="#555" Margin="0,0,20,0"/>
+                <TextBlock Text="{Binding AlgorithmTimeText}" Foreground="#1565C0"
+                           FontWeight="SemiBold" Margin="0,0,20,0"/>
+                <TextBlock Text="{Binding TotalTimeText}" Foreground="#6A1B9A"
+                           FontWeight="SemiBold" Margin="0,0,20,0"/>
+                <TextBlock Text="{Binding ReferenceTimeText}" Foreground="#00695C"
+                           FontWeight="SemiBold"/>
+            </WrapPanel>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="#C62828"
+                       FontWeight="SemiBold" Margin="0,4,0,0"/>
         </StackPanel>
 
-        <!-- Трассировка и история -->
-        <Grid Grid.Row="4" Margin="0,10,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <GroupBox Header="Трассировка рекурсии" Grid.Column="0" Margin="0,0,6,0">
-                <ListBox ItemsSource="{Binding Trace}" DisplayMemberPath="Text" FontFamily="Consolas"/>
-            </GroupBox>
-            <GroupBox Header="История проверок" Grid.Column="1" Margin="6,0,0,0">
+        <!-- Трассировка / Дерево / История -->
+        <TabControl Grid.Row="4" Margin="0,10,0,0">
+            <TabItem Header="Трассировка рекурсии">
+                <ListBox ItemsSource="{Binding Trace}" DisplayMemberPath="Text"
+                         FontFamily="Consolas"/>
+            </TabItem>
+            <TabItem Header="Дерево рекурсии">
+                <controls:RecursionTreeView DataContext="{Binding}"/>
+            </TabItem>
+            <TabItem Header="История проверок">
                 <DockPanel>
                     <Button DockPanel.Dock="Bottom" Content="Очистить историю"
                             Command="{Binding ClearHistoryCommand}"
@@ -103,11 +121,14 @@
                             <DataGridTextColumn Header="Исходная" Binding="{Binding Original}" Width="*"/>
                             <DataGridTextColumn Header="Нормализованная" Binding="{Binding Normalized}" Width="*"/>
                             <DataGridTextColumn Header="Результат" Binding="{Binding ResultText}" Width="Auto"/>
-                            <DataGridTextColumn Header="Время" Binding="{Binding Timestamp, StringFormat='HH:mm:ss'}" Width="Auto"/>
+                            <DataGridTextColumn Header="Время, мс" Binding="{Binding ElapsedText}" Width="Auto"/>
+                            <DataGridTextColumn Header="ЧЧ:ММ:СС"
+                                                Binding="{Binding Timestamp, StringFormat='HH:mm:ss'}"
+                                                Width="Auto"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </DockPanel>
-            </GroupBox>
-        </Grid>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

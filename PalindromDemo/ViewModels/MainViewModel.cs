@@ -45,6 +45,7 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private bool _showRecursionTree = true;
     [ObservableProperty] private bool _showStepTiming = false;
     [ObservableProperty] private AnimationSpeed _animationSpeed = AnimationSpeed.Normal;
+    [ObservableProperty] private bool _collapseOnReturn = true;
     [ObservableProperty] private string _normalizedText = "";
     [ObservableProperty] private string _resultText = "";
     [ObservableProperty] private CheckResult _result = CheckResult.Unknown;
@@ -243,12 +244,24 @@ public partial class MainViewModel : ObservableObject
                     if (_nodeStack.Count == 0) break;
                     var popped = _nodeStack.Pop();
                     if (popped == null) break;
+
                     popped.Result = step.Result;
                     popped.StepElapsedMs = step.StepTicks * 1000.0 / Stopwatch.Frequency;
                     popped.State = NodeState.Returned;
+
+                    if (CollapseOnReturn)
+                        _ = CollapseNodeAsync(popped);
                     break;
                 }
         }
+    }
+
+    private async Task CollapseNodeAsync(RecursionNodeViewModel node)
+    {
+        // Небольшая пауза, чтобы пользователь успел увидеть ↑ и цвет "Returned",
+        // прежде чем узел начнёт сжиматься.
+        await Task.Delay(120);
+        node.IsCollapsed = true;
     }
 
     private void UpdateTrace(CheckStep step)

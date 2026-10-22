@@ -15,6 +15,7 @@ public partial class RecursionNodeViewModel : ObservableObject
 
     [ObservableProperty] private NodeState _state = NodeState.Active;
     [ObservableProperty] private bool? _result;
+    [ObservableProperty] private bool _isCollapsed;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ElapsedText))]

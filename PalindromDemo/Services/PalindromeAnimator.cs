@@ -20,7 +20,6 @@ public class PalindromeAnimator
         var result = await CheckRecursiveAsync(s, 0, s.Length - 1, delayMs, onStep, ct);
 
         sw.Stop();
-        // ↓ Переименовано: delayTotalMs вместо delayMs
         var delayTotalMs = _totalDelayTicks * 1000.0 / Stopwatch.Frequency;
         AlgorithmElapsedMs = Math.Max(0, sw.Elapsed.TotalMilliseconds - delayTotalMs);
         return result;
@@ -51,6 +50,7 @@ public class PalindromeAnimator
             await DelayAsync();
             long ticks = Stopwatch.GetTimestamp() - start - localDelayTicks;
             await onStep(new CheckStep(left, right, StepType.Returned, true, ticks));
+            await DelayAsync();
             return true;
         }
 
@@ -73,6 +73,7 @@ public class PalindromeAnimator
 
         long nodeTicks = Stopwatch.GetTimestamp() - start - localDelayTicks;
         await onStep(new CheckStep(left, right, StepType.Returned, childResult, nodeTicks));
+        await DelayAsync();
         return childResult;
     }
 }

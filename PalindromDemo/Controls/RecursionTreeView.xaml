@@ -7,11 +7,19 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" Text="{Binding TreeOverflowMessage}"
-                       Foreground="#C62828" FontWeight="SemiBold" Margin="8,6"
+
+            <!-- Сообщение о переполнении дерева -->
+            <TextBlock Grid.Row="0"
+                       Text="{Binding TreeOverflowMessage}"
+                       Foreground="#C62828"
+                       FontWeight="SemiBold"
+                       Margin="8,6"
                        Visibility="{Binding TreeOverflowMessage,
                                     Converter={StaticResource NullToCollapsedConverter}}"/>
-            <ScrollViewer Grid.Row="1" x:Name="TreeScroll" Padding="8"
+
+            <ScrollViewer Grid.Row="1"
+                          x:Name="TreeScroll"
+                          Padding="8"
                           ScrollChanged="TreeScroll_ScrollChanged"
                           HorizontalScrollBarVisibility="Auto"
                           VerticalScrollBarVisibility="Auto">
@@ -24,11 +32,19 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Border x:Name="NodeBorder"
-                                    BorderBrush="#BDBDBD" BorderThickness="1"
-                                    CornerRadius="4" Padding="8,4"
+                                    BorderBrush="#BDBDBD"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    Padding="8,4"
                                     Margin="{Binding IndentMargin}"
                                     HorizontalAlignment="Left"
-                                    Background="White">
+                                    RenderTransformOrigin="0.5,0.5">
+                                <!-- Локальный RenderTransform — цель для анимации сжатия -->
+                                <Border.RenderTransform>
+                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                </Border.RenderTransform>
+
+                                <!-- Плавное появление узла (fade-in) -->
                                 <Border.Triggers>
                                     <EventTrigger RoutedEvent="Border.Loaded">
                                         <BeginStoryboard>
@@ -40,53 +56,41 @@
                                         </BeginStoryboard>
                                     </EventTrigger>
                                 </Border.Triggers>
+
                                 <Border.Style>
                                     <Style TargetType="Border">
+                                        <!-- ВАЖНО: цвет по умолчанию — через Setter,
+                                             чтобы DataTrigger-ы могли его переопределить -->
+                                        <Setter Property="Background" Value="White"/>
                                         <Style.Triggers>
+
+                                            <!-- Текущий вызов -->
                                             <DataTrigger Binding="{Binding State}" Value="Active">
                                                 <Setter Property="Background" Value="#FFD700"/>
-                                                <DataTrigger.EnterActions>
-                                                    <BeginStoryboard>
-                                                        <Storyboard>
-                                                            <ColorAnimation
-                                                                Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                                                To="#FFD700" Duration="0:0:0.15"/>
-                                                        </Storyboard>
-                                                    </BeginStoryboard>
-                                                </DataTrigger.EnterActions>
                                             </DataTrigger>
+
+                                            <!-- Символы совпали -->
                                             <DataTrigger Binding="{Binding State}" Value="Matched">
                                                 <Setter Property="Background" Value="#C8E6C9"/>
-                                                <DataTrigger.EnterActions>
-                                                    <BeginStoryboard>
-                                                        <Storyboard>
-                                                            <ColorAnimation
-                                                                Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                                                To="#C8E6C9" Duration="0:0:0.15"/>
-                                                        </Storyboard>
-                                                    </BeginStoryboard>
-                                                </DataTrigger.EnterActions>
                                             </DataTrigger>
+
+                                            <!-- Символы не совпали -->
                                             <DataTrigger Binding="{Binding State}" Value="Mismatched">
                                                 <Setter Property="Background" Value="#FFCDD2"/>
-                                                <DataTrigger.EnterActions>
-                                                    <BeginStoryboard>
-                                                        <Storyboard>
-                                                            <ColorAnimation
-                                                                Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
-                                                                To="#FFCDD2" Duration="0:0:0.15"/>
-                                                        </Storyboard>
-                                                    </BeginStoryboard>
-                                                </DataTrigger.EnterActions>
                                             </DataTrigger>
+
+                                            <!-- База рекурсии -->
                                             <DataTrigger Binding="{Binding State}" Value="BaseCase">
                                                 <Setter Property="Background" Value="#C8E6C9"/>
                                                 <Setter Property="BorderBrush" Value="#2E7D32"/>
                                                 <Setter Property="BorderThickness" Value="2"/>
                                             </DataTrigger>
+
+                                            <!-- Возврат значения -->
                                             <DataTrigger Binding="{Binding State}" Value="Returned">
                                                 <Setter Property="BorderThickness" Value="2"/>
                                             </DataTrigger>
+
                                             <MultiDataTrigger>
                                                 <MultiDataTrigger.Conditions>
                                                     <Condition Binding="{Binding State}" Value="Returned"/>
@@ -94,6 +98,7 @@
                                                 </MultiDataTrigger.Conditions>
                                                 <Setter Property="BorderBrush" Value="#2E7D32"/>
                                             </MultiDataTrigger>
+
                                             <MultiDataTrigger>
                                                 <MultiDataTrigger.Conditions>
                                                     <Condition Binding="{Binding State}" Value="Returned"/>
@@ -101,19 +106,88 @@
                                                 </MultiDataTrigger.Conditions>
                                                 <Setter Property="BorderBrush" Value="#C62828"/>
                                             </MultiDataTrigger>
+
+                                            <!-- Сворачивание при возврате -->
+                                            <DataTrigger Binding="{Binding IsCollapsed}" Value="True">
+                                                <DataTrigger.EnterActions>
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation
+                                                                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                                To="0.35" Duration="0:0:0.35">
+                                                                <DoubleAnimation.EasingFunction>
+                                                                    <CubicEase EasingMode="EaseIn"/>
+                                                                </DoubleAnimation.EasingFunction>
+                                                            </DoubleAnimation>
+                                                            <DoubleAnimation
+                                                                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                                To="0.35" Duration="0:0:0.35">
+                                                                <DoubleAnimation.EasingFunction>
+                                                                    <CubicEase EasingMode="EaseIn"/>
+                                                                </DoubleAnimation.EasingFunction>
+                                                            </DoubleAnimation>
+                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                             To="0.4" Duration="0:0:0.35"/>
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </DataTrigger.EnterActions>
+                                                <DataTrigger.ExitActions>
+                                                    <BeginStoryboard>
+                                                        <Storyboard>
+                                                            <DoubleAnimation
+                                                                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                                                To="1" Duration="0:0:0.2"/>
+                                                            <DoubleAnimation
+                                                                Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                                To="1" Duration="0:0:0.2"/>
+                                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                             To="1" Duration="0:0:0.2"/>
+                                                        </Storyboard>
+                                                    </BeginStoryboard>
+                                                </DataTrigger.ExitActions>
+                                            </DataTrigger>
+
                                         </Style.Triggers>
                                     </Style>
                                 </Border.Style>
+
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding HeaderText}" FontFamily="Consolas"
-                                               FontWeight="SemiBold" Foreground="#222"/>
-                                    <TextBlock Text="{Binding CharsDisplay}" Margin="12,0,0,0"
-                                               FontFamily="Consolas" Foreground="#444"/>
+                                    <TextBlock Text="{Binding HeaderText}"
+                                               FontFamily="Consolas"
+                                               FontWeight="SemiBold"
+                                               Foreground="#222"/>
+                                    <TextBlock Text="{Binding CharsDisplay}"
+                                               Margin="12,0,0,0"
+                                               FontFamily="Consolas"
+                                               Foreground="#444"/>
+
+                                    <!-- Значок возврата ↑ -->
+                                    <TextBlock Text="↑"
+                                               FontSize="14"
+                                               Foreground="#4CAF50"
+                                               FontWeight="Bold"
+                                               Margin="10,0,0,0"
+                                               VerticalAlignment="Center">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding State}" Value="Returned">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
                                     <TextBlock Text="{Binding Result, TargetNullValue=''}"
-                                               Margin="12,0,0,0" FontWeight="SemiBold"
+                                               Margin="12,0,0,0"
+                                               FontWeight="SemiBold"
                                                Foreground="#333"/>
-                                    <TextBlock Text="{Binding ElapsedText}" Margin="12,0,0,0"
-                                               Foreground="#666" FontFamily="Consolas"/>
+                                    <TextBlock Text="{Binding ElapsedText}"
+                                               Margin="12,0,0,0"
+                                               Foreground="#666"
+                                               FontFamily="Consolas"/>
                                 </StackPanel>
                             </Border>
                         </DataTemplate>
